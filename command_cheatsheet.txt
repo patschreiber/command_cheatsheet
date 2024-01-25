@@ -1,0 +1,311 @@
+man -k <topic>
+
+/usr/bin/mdutil
+/usr/bin/kmutil
+
+
+=================================================================================
+# Show Wi-Fi diagnostics
+wdutil diagnose
+
+
+=================================================================================
+# Reset bluetooth
+sudo pkill bluetoothd
+
+
+=================================================================================
+# The tccutil command manages the privacy database, which stores decisions the user has made about whether apps may access personal data.
+tccutil reset All
+tccutil reset AddressBook
+tccutil reset All com.apple.Terminal
+
+
+=================================================================================
+# SIP, GateKeeper, FileVault status
+csrutil status
+spctl --status
+fdesetup status
+
+
+=================================================================================
+# Directly query DNS records
+dig +short caldav.fe.apple-dns.net @8.8.8.8
+dig +short iosapps.itunes.g.aaplimg.com @8.8.8.8
+dig health.apple.com @8.8.8.8
+dig +short ch02sa-p02.seed-siri-apple.com.akadns.net @8.8.8.8
+
+
+=================================================================================
+Flush DNS cache the macOS way
+sudo dscacheutil -flushcache
+
+
+=================================================================================
+# Reset nvram cli
+nvram -c
+
+# To mimic the button presses, do:
+sudo nvram -c && sudo nvram ResetNVRam=1 && sudo reboot
+
+=================================================================================
+# Make macOS bootable
+softwareupdate --fetch-full-installer --full-installer-version **.**.*
+
+# Big Sur 11.x
+sudo /Applications/Install\ macOS\ Big\ Sur.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume
+# Catalina 10.15
+sudo /Applications/Install\ macOS\ Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume
+# Mojave 10.14
+sudo /Applications/Install\ macOS\ Mojave.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume
+# High Sierra 10.13
+sudo /Applications/Install\ macOS\ High\ Sierra.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume
+# More Info https://support.apple.com/en-us/HT201372
+
+=================================================================================
+# Check traffic access
+dig a +short facebook.com
+curl --connect-timeout 5 -I http://facebook.com/
+sudo tcpdump -tqni pflog0 'host 157.240.2.35' # IP is from `dig`
+
+# Note Quarantine stores information about downloaded files in ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV2, which may pose a privacy risk. To examine the file, simply use strings or the following command:
+
+```
+echo 'SELECT datetime(LSQuarantineTimeStamp + 978307200, "unixepoch") as LSQuarantineTimeStamp, ' \
+  'LSQuarantineAgentName, LSQuarantineOriginURLString, LSQuarantineDataURLString from LSQuarantineEvent;' | \
+  sqlite3 /Users/$USER/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV2
+```
+
+Useful tree
+tree -DFhCH -T "User Lib Index" Documents/Dropbox/music/ableton/User\ Library -o ableton_user_lib_index.html
+
+=================================================================================
+# Network interfaces
+
+awdl: Apple Wireless Direct Link. It's part of Apple's proprietary technology that enables communication between devices for features like AirDrop, AirPlay, and other peer-to-peer services.
+
+lo0: internal. This interface is often used for network testing, troubleshooting, and various system processes that require network functionality without actually interacting with an external network.
+
+llw: The llw interface is a network interface that comes from a nexus defined in the Skywalk system. 
+
+
+
+
+
+# Look up interfaces in the skywalk system like this:
+skywalkctl list-providers | grep llw
+
+=================================================================================
+# log compilation 
+log 
+commands:
+    collect         gather system logs into a log archive
+    config          view/change logging system settings
+    erase           delete system logging data
+    show            view/search system logs
+    stream          watch live system logs
+    stats           show system logging statistics
+
+further help:
+    log help <command>
+    log help predicates
+
+=================================================================================
+# codesign check 
+/usr/bin/codesign -v -vvvv <path>
+
+codesign --verify --deep --verbose=4 --strict MyApp.app/
+MyApp.app/: valid on disk
+MyApp.app/: satisfies its Designated Requirement
+
+
+spctl --verbose=4 --assess --type execute MyApp.app/
+MyApp.app/: accepted
+source=Developer ID
+
+
+=================================================================================
+Find extra information about files stored in an .app bundle
+xattr -lr /path/to/App.app
+
+
+=================================================================================
+# Check DHCP
+ipconfig getpacket en0
+
+
+# Write Defaults
+defaults write /Library/Preferences/com.apple.virtualmemory.UseEncryptedSwap -bool yes
+defaults write /Library/Preferences/com.apple.driver.AppleIRController DeviceEnabled -bool no
+
+
+=================================================================================
+vmmap <pid>
+
+
+=================================================================================
+diskutil info /dev/disk3
+diskutil partitionDisk /dev/disk3 1 MBR FAT32 UNTITILED <bytes>B 
+
+
+=================================================================================
+smartd/smartctl (requires smartmontools)
+
+Check SMART status of disk and remaining health
+smartctl -a /dev/disk0
+
+
+=================================================================================
+security lock-keychain -a  
+
+fdsetup for my login info
+fdesetup will also give user uuid
+patricks,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  
+
+
+=================================================================================
+Monitor TCP Traffic on specific port
+tcpdump port 443 and '(tcp-syn|tcp-ack)!=0'
+
+
+=================================================================================
+Query the package receipt database for file info
+
+pkgutil --file-info /.file
+
+
+=================================================================================
+List all users and their unique ID (these are visible in Directory Utility)
+
+dscl . -list /Users UniqueID
+dscl . -list /Users GeneratedUID
+
+List SMB user ids
+dscl . -list /Users SMBSID
+
+=================================================================================
+Display your current shell name reliably
+ps -p $$
+
+
+=================================================================================
+my jp2a script
+/Users/patricks/Library/Mobile\ Documents/com\~apple\~CloudDocs/Pictures\/jp2a/input/jp2a_script.sh
+
+./jp2a_script.sh atomic_struct_260x237.jpg 4 240
+
+
+=================================================================================
+macOS has a powerful OpenBSM (Basic Security Module) auditing capability. You can use it to monitor process execution, network activity, and much more.
+
+sudo praudit -l /dev/auditpipe
+
+
+=================================================================================
+Unload/Load launchctl plists
+launchctl unload -w  ~/Library/LaunchAgents/homebrew.mxcl.mariadb.plist
+launchctl load -w  ~/Library/LaunchAgents/homebrew.mxcl.mariadb.plist
+
+-------------------------------
+Other useful launchctl commands
+launchctl list gui/201   
+sudo launchctl print user/201  
+sudo launchctl print user/0
+
+
+=================================================================================
+Find kexts in prelinked kernels
+
+sudo find /System /Library ~/ -type f | while read line; do sudo grep -i rehabman "$line"; done\
+2124 Binary file /System/Library/PrelinkedKernels/prelinkedkernel matches
+
+
+=================================================================================
+Show kext logs
+kmutil log show
+
+
+=================================================================================
+Check kext integrity
+kmutil check
+
+
+=================================================================================
+Check system kext policy
+
+sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy
+SELECT * FROM kext_policy;
+
+
+=================================================================================
+Unload kext
+
+/usr/bin/kmutil unload -p /Library/StagedExtensions/Library/Extensions/HighPointIOP.kext
+or
+sudo kextunload -p /pat/to/.kext
+
+
+=================================================================================
+kmutil trigger-panic-medic
+only available in recoveryOS, clears the AKC at /Library/KernelCollections and forces it to be rebuilt, which requires each kernel extension to be re-approved before it can be loaded. This is intended to be used to recover a system following a kernel panic generated by one of the kernel extensions in the AKC.
+
+
+=================================================================================
+Show kext load history
+
+sudo sqlite3 /var/db/SystemPolicyConfiguration/KextPolicy
+sqlite> .tables
+deprecation_alert_history  kext_policy_mdm          
+kext_load_history_v3       settings                 
+kext_policy              
+sqlite> select * from kext_load_history_v3
+
+=================================================================================
+See connected USB devices
+ioreg -p IOUSB
+
+List all USB devices currently connected
+ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*'
+
+
+=================================================================================
+netstat
+netstat -aLm
+netstat -nr -f inet6 
+
+-a    With the default display, show the state of all sockets; normally sockets used by server processes are not shown. With the routing
+           table display (option -r, as described below), show protocol-cloned routes (routes generated by a RTF_PRCLONING parent route);
+           normally these routes are not shown.
+-L    Show the size of the various listen queues.  The first count shows the number of unaccepted connections.  The second count shows the
+           amount of unaccepted incomplete connections.  The third count is the maximum number of queued connections.
+-m    Show statistics recorded by the memory management routines (the network stack manages a private pool of memory buffers). More
+           detailed information about the buffers, which includes their cache related statistics, can be obtained by using -mm or -m -m option.
+-f    address_family
+           Limit statistics or address control block reports to those of the specified address family.  The following address families are
+           recognized: inet, for AF_INET, inet6, for AF_INET6, unix, for AF_UNIX and vsock, for AF_VSOCK.
+-r    Show the routing tables.  Use with -a to show protocol-cloned routes.  When -s is also present, show routing statistics instead. When -l is also present, netstat assumes more columns are there and the maximum transmission unit.  More detailed information about the route metrics are displayed with -ll for TCP round trip times -lll for all metrics.  Use the -z flags to display only entries with non-zero RTT values.  (“mtu”) are also displayed.
+-R    Show reachability information.  Use with -i to show link-layer reachability information for a given interface.
+sudo /System/Library/PrivateFrameworks/Seeding.framework/Versions/Current/Resources/seedutil
+
+
+=================================================================================
+List Active/Inactive Audio Interfaces
+
+avbdiagnose
+
+
+=================================================================================
+The `security` command is lit. Look more into it. 
+
+
+=================================================================================
+Helps remove some of the opacity of "background items" in System Settings
+Case: What's `Google LLC`? It's the auto-updater.
+
+sfltool dumpbtm
+
+
+=================================================================================
+=================================================================================
+
+===================================================================================================================================================================================================================================================
