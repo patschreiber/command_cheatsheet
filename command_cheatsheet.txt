@@ -307,5 +307,27 @@ sfltool dumpbtm
 
 =================================================================================
 =================================================================================
+Homebrew
 
-===================================================================================================================================================================================================================================================
+# Search and dump to file. Can do open searches this way.
+brew search --desc --eval-all "audio" >> ~/brew_search_desc_audio_eval_all.txt
+
+# To look into
+brew home switch adapter xld tunetag mixed-in-key-live media-info midicsv musepack minimodem normalize rubberband taglib avtouchbar mp3tag
+
+
+
+=================================================================================
+This will list the type of device (which is always "character" for serial ports) and the major and minor device numbers.
+
+stat  -f "Name: %N%n%tType: %HT%n%tMajor: %Hr%n%tMinor: %Lr%n%n" /dev/tty.Bluetooth-Incoming-Port
+- See: https://apple.stackexchange.com/questions/443895/what-exactly-are-the-serial-ports-listed-and-why-dont-they-have-a-normal-numb
+
+
+=================================================================================
+Delete group as seen in ls -la
+
+sudo dscl . -delete /Groups/access_bpf
+
+
+=================================================================================
